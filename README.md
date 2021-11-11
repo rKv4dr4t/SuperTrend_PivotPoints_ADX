@@ -1,4 +1,4 @@
-# SuperTrend-Pivot-Points + ADX
+# SuperTrend Pivot Points + ADX
 Technical analysis strategy based on SuperTrend Pivot Points + ADX.
 Backtested it on [TradingView](https://www.tradingview.com/)
 Approximately 53.85 % of profitability
