@@ -10,3 +10,8 @@ I am not a financial advisor nor is any content in this article presented as fin
 
 ## Credits
 Based on [LonesomeTheBlue](https://www.tradingview.com/u/LonesomeTheBlue/) [strategy](https://www.tradingview.com/script/DwdC6FT4-Pivot-Point-SuperTrend-Backtest/) Copyright (c) 2020
+
+
+
+
+![2021-11-11 19_45_22-ETHEUR 4145 23 ▲ +2 45% Unnamed – Mozilla Firefox](https://user-images.githubusercontent.com/39592856/141352216-0fb08c6c-8e43-49fe-b508-93fa90c271ef.png)
