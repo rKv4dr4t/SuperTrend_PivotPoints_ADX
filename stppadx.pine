@@ -79,6 +79,7 @@ buy = bsignalSSPP and outMA < close and ADX > th
 sell = ssignalSSPP 
 
 if (buy)
+    // .order // Tuned version
     strategy.entry("Buy", strategy.long)
 
 
