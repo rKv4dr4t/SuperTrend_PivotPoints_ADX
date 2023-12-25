@@ -1,4 +1,4 @@
-//@version=4
+//@version=5
 strategy("STPP20 + ADX", overlay = true)
 
 ///////////////////////////
@@ -6,82 +6,88 @@ strategy("STPP20 + ADX", overlay = true)
 //////////////////////////
 
 src =  input(close, title="EMA Source")
-PPprd = input(defval = 2, title="Pivot Point Period", minval = 1, maxval = 50)
-AtrFactor=input(defval = 5, title = "ATR Factor", minval = 1, step = 0.1)
-AtrPd=input(defval = 20, title = "ATR Period", minval=1)
+enableFilter = input(true,  "Enable Backtesting Range Filtering")
+fromDate     = input.time(timestamp("20 Jul 2017 00:00 +0300"), "Start Date")
+toDate       = input.time(timestamp("20 Jul 2099 00:00 +0300"), "End Date")
 
-float ph = na
-float pl = na
-ph := pivothigh(PPprd, PPprd)
-pl := pivotlow(PPprd, PPprd)
+tradeDateIsAllowed = not enableFilter or (time >= fromDate and time <= toDate)
+if tradeDateIsAllowed
+	PPprd = input.int(defval = 2, title="Pivot Point Period", minval = 1, maxval = 50)
+	AtrFactor=input.float(defval = 5, title = "ATR Factor", minval = 1, step = 0.1)
+	AtrPd=input.float(defval = 20, title = "ATR Period", minval=1)
 
-float center = na
-center := center[1]
-float lastpp = ph ? ph : pl ? pl : na
-if lastpp
-    if na(center)
-        center := lastpp
-    else
-        center := (center * 2 + lastpp) / 3
+	float ph = na
+	float pl = na
+	ph := pivothigh(PPprd, PPprd)
+	pl := pivotlow(PPprd, PPprd)
 
-Up = center - (AtrFactor * atr(AtrPd))
-Dn = center + (AtrFactor * atr(AtrPd))
+	float center = na
+	center := center[1]
+	float lastpp = ph ? ph : pl ? pl : na
+	if lastpp
+		if na(center)
+			center := lastpp
+		else
+			center := (center * 2 + lastpp) / 3
 
-float TUp = na
-float TDown = na
-Trend = 0
-TUp := close[1] > TUp[1] ? max(Up, TUp[1]) : Up
-TDown := close[1] < TDown[1] ? min(Dn, TDown[1]) : Dn
-Trend := close > TDown[1] ? 1: close < TUp[1]? -1: nz(Trend[1], 1)
-Trailingsl = Trend == 1 ? TUp : TDown
+	Up = center - (AtrFactor * atr(AtrPd))
+	Dn = center + (AtrFactor * atr(AtrPd))
 
-// Lines
-linecolor = Trend == 1 and nz(Trend[1]) == 1 ? color.lime : Trend == -1 and nz(Trend[1]) == -1 ? color.red : na
-plot(Trailingsl, color = linecolor ,  linewidth = 2, title = "PP SuperTrend")
+	float TUp = na
+	float TDown = na
+	Trend = 0
+	TUp := close[1] > TUp[1] ? max(Up, TUp[1]) : Up
+	TDown := close[1] < TDown[1] ? min(Dn, TDown[1]) : Dn
+	Trend := close > TDown[1] ? 1: close < TUp[1]? -1: nz(Trend[1], 1)
+	Trailingsl = Trend == 1 ? TUp : TDown
 
-bsignalSSPP = close > Trailingsl
-ssignalSSPP = close < Trailingsl
+	// Lines
+	linecolor = Trend == 1 and nz(Trend[1]) == 1 ? color.lime : Trend == -1 and nz(Trend[1]) == -1 ? color.red : na
+	plot(Trailingsl, color = linecolor ,  linewidth = 2, title = "PP SuperTrend")
 
-
-///////
-// ADX
-//////
-
-lenADX = 14
-th = 25
-TrueRange = max(max(high-low, abs(high-nz(close[1]))), abs(low-nz(close[1])))
-DirectionalMovementPlus = high-nz(high[1]) > nz(low[1])-low ? max(high-nz(high[1]), 0): 0
-DirectionalMovementMinus = nz(low[1])-low > high-nz(high[1]) ? max(nz(low[1])-low, 0): 0
-SmoothedTrueRange = 0.0
-SmoothedTrueRange := nz(SmoothedTrueRange[1]) - (nz(SmoothedTrueRange[1])/lenADX) + TrueRange
-SmoothedDirectionalMovementPlus = 0.0
-SmoothedDirectionalMovementPlus := nz(SmoothedDirectionalMovementPlus[1]) - (nz(SmoothedDirectionalMovementPlus[1])/lenADX) + DirectionalMovementPlus
-SmoothedDirectionalMovementMinus = 0.0
-SmoothedDirectionalMovementMinus := nz(SmoothedDirectionalMovementMinus[1]) - (nz(SmoothedDirectionalMovementMinus[1])/lenADX) + DirectionalMovementMinus
-DIPlus = SmoothedDirectionalMovementPlus / SmoothedTrueRange * 100
-DIMinus = SmoothedDirectionalMovementMinus / SmoothedTrueRange * 100
-DX = abs(DIPlus-DIMinus) / (DIPlus+DIMinus)*100
-ADX = sma(DX, lenADX)
+	bsignalSSPP = close > Trailingsl
+	ssignalSSPP = close < Trailingsl
 
 
-//////
-// MA
-/////
+	///////
+	// ADX
+	//////
 
-lenMA = 21
-srcMA = input(close, title="Source")
-offsetMA = input(title="Offset", type=input.integer, defval=0, minval=-500, maxval=500)
-outMA = sma(srcMA, lenMA)
+	lenADX = 14
+	th = 25
+	TrueRange = max(max(high-low, abs(high-nz(close[1]))), abs(low-nz(close[1])))
+	DirectionalMovementPlus = high-nz(high[1]) > nz(low[1])-low ? max(high-nz(high[1]), 0): 0
+	DirectionalMovementMinus = nz(low[1])-low > high-nz(high[1]) ? max(nz(low[1])-low, 0): 0
+	SmoothedTrueRange = 0.0
+	SmoothedTrueRange := nz(SmoothedTrueRange[1]) - (nz(SmoothedTrueRange[1])/lenADX) + TrueRange
+	SmoothedDirectionalMovementPlus = 0.0
+	SmoothedDirectionalMovementPlus := nz(SmoothedDirectionalMovementPlus[1]) - (nz(SmoothedDirectionalMovementPlus[1])/lenADX) + DirectionalMovementPlus
+	SmoothedDirectionalMovementMinus = 0.0
+	SmoothedDirectionalMovementMinus := nz(SmoothedDirectionalMovementMinus[1]) - (nz(SmoothedDirectionalMovementMinus[1])/lenADX) + DirectionalMovementMinus
+	DIPlus = SmoothedDirectionalMovementPlus / SmoothedTrueRange * 100
+	DIMinus = SmoothedDirectionalMovementMinus / SmoothedTrueRange * 100
+	DX = abs(DIPlus-DIMinus) / (DIPlus+DIMinus)*100
+	ADX = sma(DX, lenADX)
 
 
-// Buy - Sell Entries
-buy = bsignalSSPP and outMA < close and ADX > th
-sell = ssignalSSPP 
+	//////
+	// MA
+	/////
 
-if (buy)
-    // .order // Tuned version
-    strategy.entry("Buy", strategy.long)
+	lenMA = 21
+	srcMA = input(close, title="Source")
+	offsetMA = input(title="Offset", type=input.integer, defval=0, minval=-500, maxval=500)
+	outMA = sma(srcMA, lenMA)
 
 
-if (sell) and (strategy.position_size > 0)
-    strategy.order("Sell", false, when = sell)
+	// Buy - Sell Entries
+	buy = bsignalSSPP and outMA < close and ADX > th
+	sell = ssignalSSPP 
+
+	if (buy)
+		// .order // Tuned version
+		strategy.entry("Buy", strategy.long)
+
+
+	if (sell) and (strategy.position_size > 0)
+		strategy.order("Sell", false, when = sell)
